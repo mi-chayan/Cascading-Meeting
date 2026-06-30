@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cascading Meeting Co-Ordinator | SNOWTEX</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Segoe UI',Arial,sans-serif;background:#c8c8c8;}
+
+/* ── TOP BAR ── */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(90deg,#5a0e2c 0%,#7a1040 50%,#5a0e2c 100%);
+  padding:10px 18px;position:sticky;top:0;z-index:100;
+  box-shadow:0 3px 10px rgba(0,0,0,0.4);
+}
+.topbar-title{
+  color:#fff;font-size:22px;font-weight:700;letter-spacing:2.5px;
+  text-shadow:1px 1px 4px rgba(0,0,0,0.5);flex:1;text-align:center;
+}
+.topbar-right{display:flex;align-items:center;gap:10px;}
+
+/* SNOWTEX Logo */
+.snowtex-logo{
+  display:flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,0.12);
+  border:1.5px solid rgba(255,255,255,0.3);
+  border-radius:30px;padding:4px 10px 4px 6px;
+}
+.snowtex-icon{
+  width:32px;height:32px;border-radius:50%;
+  background:linear-gradient(135deg,#1a7a1a,#2ecc71);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;color:white;font-weight:900;flex-shrink:0;
+  box-shadow:0 2px 6px rgba(0,0,0,0.3);
+}
+.snowtex-text{color:#fff;font-size:11px;font-weight:700;line-height:1.2;letter-spacing:1px;}
+.snowtex-text small{display:block;font-weight:400;font-size:9px;opacity:0.8;letter-spacing:0.5px;}
+
+/* Fullscreen button */
+.fs-btn{
+  background:rgba(255,255,255,0.15);border:1.5px solid rgba(255,255,255,0.4);
+  color:#fff;border-radius:6px;width:34px;height:34px;
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background 0.2s;flex-shrink:0;
+}
+.fs-btn:hover{background:rgba(255,255,255,0.3);}
+
+/* ── STATS ROW ── */
+.stats-row{display:flex;align-items:stretch;min-height:48px;}
+.s-total-lbl{
+  background:#3a1c6e;color:#fff;font-weight:700;font-size:13px;
+  padding:8px 14px;display:flex;align-items:center;white-space:nowrap;line-height:1.3;
+  min-width:108px;
+}
+.s-total-val{
+  background:#3a1c6e;color:#fff;font-weight:700;font-size:30px;
+  padding:6px 18px;display:flex;align-items:center;justify-content:center;min-width:60px;
+}
+.s-alloc-lbl{
+  flex:1;background:#9e4070;color:#fff;font-weight:700;font-size:14px;
+  text-align:center;padding:8px 10px;display:flex;align-items:center;justify-content:center;
+}
+.s-alloc-val{
+  background:#f0a000;padding:6px 8px;
+  display:flex;align-items:center;justify-content:center;min-width:85px;
+}
+.s-alloc-val input{
+  background:transparent;border:none;color:#fff;font-weight:700;
+  font-size:26px;width:74px;text-align:center;outline:none;cursor:pointer;
+}
+.s-alloc-val input:focus{border-bottom:2px solid #fff;}
+.s-minutes{
+  background:#3a1c6e;color:#f0c030;font-weight:700;font-size:15px;
+  padding:8px 14px;display:flex;align-items:center;
+}
+
+/* ── MAIN LAYOUT ── */
+.main-wrap{display:flex;align-items:flex-start;background:#fff;}
+.tbl-wrap{flex:1;overflow-x:auto;}
+
+/* ── TABLE ── */
+table{width:100%;border-collapse:collapse;font-size:13.5px;table-layout:fixed;}
+thead th{
+  background:#2d7575;color:#fff;font-weight:700;padding:9px 6px;
+  border:1px solid #1f5f5f;text-align:center;vertical-align:middle;
+  white-space:nowrap;font-size:13px;
+}
+tbody td{padding:5px 5px;border:1px solid #d0d0d0;vertical-align:middle;}
+tbody tr:not(.hl) td{background:#fff;}
+tbody tr:not(.hl):nth-child(even) td{background:#f7f7f7;}
+tbody tr.hl td{background:#72bc72;}
+tbody tr.hl td input[type="text"],
+tbody tr.hl td select,
+tbody tr.hl .sl-cell{color:#0000cc!important;font-weight:700;}
+
+/* Col widths */
+col.c-chk{width:36px;}col.c-sl{width:36px;}col.c-cp{width:145px;}
+col.c-dp{width:auto;}col.c-att{width:78px;}col.c-rp{width:155px;}
+col.c-st{width:118px;}col.c-ap{width:185px;}
+
+.sl-cell{text-align:center;font-weight:700;color:#0000bb;font-size:15px;}
+.chk-cell,.att-cell{text-align:center;}
+input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:#2d7a2d;}
+td input[type="text"]{
+  width:100%;border:none;background:transparent;font-size:13.5px;
+  padding:2px 4px;outline:none;color:inherit;font-weight:inherit;
+}
+td input[type="text"]:focus{background:rgba(255,255,240,.95);border-bottom:2px solid #2d7575;border-radius:2px;}
+select.ssel{
+  width:100%;border:1px solid #bbb;background:#f5f5f5;padding:3px 2px;
+  font-size:13px;cursor:pointer;border-radius:3px;
+}
+select.ssel:focus{outline:1px solid #2d7575;}
+.add-btn{
+  margin:10px 12px;background:#2d7575;color:#fff;border:none;
+  padding:7px 22px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700;
+}
+.add-btn:hover{background:#1f5555;}
+
+/* ── SIDE BUTTONS ── */
+.side-btns{
+  width:88px;display:flex;flex-direction:column;align-items:center;
+  padding:22px 8px 16px;gap:14px;background:#f2f2f2;
+  border-left:2px solid #ddd;flex-shrink:0;min-height:380px;
+}
+.sb{border:none;border-radius:8px;cursor:pointer;font-weight:700;
+    transition:filter 0.15s,transform 0.1s;text-align:center;}
+.sb:hover{filter:brightness(0.88);transform:scale(1.04);}
+.sb:active{transform:scale(0.97);}
+.sb-alert{
+  background:#8dc98c;color:#1a1a1a;border:2px solid #5faa5e;
+  padding:8px 6px;font-size:13px;width:72px;
+  box-shadow:0 2px 6px rgba(0,0,0,.15);
+}
+.sb-transfer{
+  background:#6a1838;color:#fff;border:2px solid #460f25;
+  padding:8px 6px;font-size:13px;width:72px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.sb-transfer:disabled{opacity:.6;cursor:not-allowed;}
+.sb-timer{
+  background:#6a1838;color:#fff;border:none;border-radius:50%;
+  width:52px;height:52px;font-size:20px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 3px 8px rgba(0,0,0,.25);
+  transition:background .2s,transform .1s;
+}
+.sb-timer:hover{filter:brightness(0.85);}
+.sb-timer.running{background:#b83000;animation:pulse .9s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.65;}}
+.sb-fac{
+  background:#1550b8;color:#fff;border:2px solid #0d3585;
+  padding:8px 5px;font-size:12px;width:72px;line-height:1.35;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+
+/* ── OVERLAY BASE ── */
+.overlay{
+  display:none;position:fixed;inset:0;z-index:500;
+  align-items:center;justify-content:center;
+}
+.overlay.open{display:flex;}
+
+/* ── ALERT OVERLAY ── */
+#alertOverlay{
+  flex-direction:column;align-items:center;justify-content:center;
+  animation:blinkBg 2.5s infinite;
+  font-family:'Roboto Mono',monospace;
+}
+@keyframes blinkBg{
+  0%  {background:#d90026;}
+  20% {background:#c74000;}
+  40% {background:#5500b8;}
+  60% {background:#004dbf;}
+  80% {background:#007db0;}
+  100%{background:#d90026;}
+}
+.alert-msg{
+  color:#fff;font-size:clamp(22px,4vw,48px);font-weight:900;
+  text-align:center;padding:0 30px;line-height:1.3;
+  text-shadow:2px 2px 8px rgba(0,0,0,.6);
+  animation:shake 0.5s infinite alternate;
+}
+@keyframes shake{
+  0%{transform:translateX(-4px);}100%{transform:translateX(4px);}
+}
+.alert-sub{
+  color:rgba(255,255,255,.85);font-size:clamp(14px,2vw,22px);
+  margin-top:16px;text-align:center;
+}
+.alert-actions{margin-top:40px;display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+.alert-btn{
+  padding:12px 28px;border:none;border-radius:40px;font-size:16px;
+  font-weight:700;cursor:pointer;box-shadow:0 4px 10px rgba(0,0,0,.3);
+  transition:transform .15s;
+}
+.alert-btn:hover{transform:scale(1.07);}
+.abtn-voice{background:linear-gradient(135deg,#5500b8,#004dbf);color:#fff;}
+.abtn-close{background:rgba(255,255,255,.25);color:#fff;border:2px solid rgba(255,255,255,.6);}
+
+/* ── FACILITATOR WHEEL OVERLAY ── */
+#facOverlay{background:rgba(0,0,0,.75);}
+.fac-popup{
+  background:linear-gradient(145deg,#1a1a2e,#16213e);
+  border-radius:16px;padding:28px 24px;width:min(560px,95vw);
+  text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.6);
+  border:1px solid rgba(255,255,255,.1);
+}
+.fac-popup h2{color:#fff;font-size:20px;margin-bottom:14px;letter-spacing:1px;}
+.wheel-wrap{position:relative;display:inline-block;margin-bottom:12px;}
+#wheelCanvas{border-radius:50%;display:block;}
+/* Pointer at top */
+.wheel-pointer{
+  position:absolute;top:-14px;left:50%;transform:translateX(-50%);
+  width:0;height:0;
+  border-left:12px solid transparent;
+  border-right:12px solid transparent;
+  border-top:22px solid #f0c030;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+}
+.winner-box{
+  min-height:38px;margin:8px 0;padding:8px 16px;
+  background:rgba(255,255,255,.1);border-radius:8px;
+  color:#f0c030;font-size:18px;font-weight:700;
+  display:flex;align-items:center;justify-content:center;
+  letter-spacing:.5px;
+}
+.fac-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:10px;}
+.fac-btn{
+  padding:9px 20px;border:none;border-radius:8px;
+  font-size:14px;font-weight:700;cursor:pointer;transition:opacity .15s;
+}
+.fac-btn:hover{opacity:.85;}
+.fb-spin{background:linear-gradient(135deg,#f0a000,#e65c00);color:#fff;}
+.fb-pick{background:linear-gradient(135deg,#1a7a1a,#2ecc71);color:#fff;}
+.fb-close{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);}
+.fac-loading{color:rgba(255,255,255,.6);font-size:13px;margin:10px 0;}
+
+/* ── TIMER POPUP ── */
+#timerOverlay{background:rgba(0,0,0,.65);}
+.timer-popup{
+  background:#1e1e2e;border-radius:14px;padding:30px 26px;
+  text-align:center;width:min(360px,92vw);
+  box-shadow:0 10px 36px rgba(0,0,0,.5);border:1px solid rgba(255,255,255,.08);
+}
+.timer-popup h2{color:#fff;font-size:18px;margin-bottom:6px;}
+.timer-clock{
+  font-size:68px;font-weight:900;font-family:'Courier New',monospace;
+  color:#f0c030;line-height:1;margin:10px 0 6px;letter-spacing:4px;
+  transition:color .4s;
+}
+.timer-clock.warn{color:#e06000;}
+.timer-clock.over{color:#dd2200;animation:shake .4s infinite alternate;}
+.timer-sub{color:rgba(255,255,255,.55);font-size:13px;margin-bottom:16px;}
+.timer-btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;}
+.tbtn{padding:8px 18px;border:none;border-radius:6px;font-size:13px;font-weight:700;cursor:pointer;}
+.tb-start{background:#2d7575;color:#fff;}
+.tb-stop{background:#b83000;color:#fff;}
+.tb-close{background:#555;color:#fff;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:22px;right:22px;z-index:1000;
+  padding:12px 22px;border-radius:8px;font-size:14px;font-weight:700;
+  color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.35);
+  opacity:0;transition:opacity .35s;pointer-events:none;
+  background:#1a6a1a;
+}
+.toast.show{opacity:1;}
+.toast.err{background:#8a1a1a;}
+
+/* ── CONFETTI ── */
+.conf{position:fixed;pointer-events:none;z-index:9999;border-radius:2px;}
+
+/* ── RESPONSIVE ── */
+@media(max-width:700px){
+  .topbar-title{font-size:15px;letter-spacing:1px;}
+  .s-alloc-lbl{font-size:11px;}
+  table{font-size:12px;}
+  .side-btns{width:66px;padding:16px 4px;}
+  .sb-alert,.sb-transfer,.sb-fac{width:58px;font-size:11px;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════ TOP BAR ══════════════ -->
+<div class="topbar">
+  <!-- spacer left -->
+  <div style="width:160px;flex-shrink:0;"></div>
+
+  <div class="topbar-title">Cascading Meeting Co-Ordinator</div>
+
+  <div class="topbar-right">
+    <!-- SNOWTEX Logo -->
+    <div class="snowtex-logo">
+      <div class="snowtex-icon">❄</div>
+      <div class="snowtex-text">
+        SNOWTEX
+        <small>OUTERWEAR LTD.</small>
+      </div>
+    </div>
+    <!-- Fullscreen -->
+    <button class="fs-btn" onclick="toggleFS()" id="fsBtn" title="Toggle Fullscreen">⛶</button>
+  </div>
+</div>
+
+<!-- ══════════════ STATS ROW ══════════════ -->
+<div class="stats-row">
+  <div class="s-total-lbl">Total<br>Points:</div>
+  <div class="s-total-val" id="totalPts">0</div>
+  <div class="s-alloc-lbl">Allocated time for each point:</div>
+  <div class="s-alloc-val">
+    <input type="number" id="minsInput" value="10" min="1" max="120" title="Minutes per point">
+  </div>
+  <div class="s-minutes">Minutes</div>
+</div>
+
+<!-- ══════════════ MAIN AREA ══════════════ -->
+<div class="main-wrap">
+
+  <!-- Table -->
+  <div class="tbl-wrap">
+    <table id="tbl">
+      <colgroup>
+        <col class="c-chk"><col class="c-sl"><col class="c-cp"><col class="c-dp">
+        <col class="c-att"><col class="c-rp"><col class="c-st"><col class="c-ap">
+      </colgroup>
+      <thead>
+        <tr>
+          <th></th><th>SL</th><th>Concern Person</th><th>Discussion Points</th>
+          <th>Attendance</th><th>Responsible Person</th><th>Status</th><th>Action Plan</th>
+        </tr>
+      </thead>
+      <tbody id="tbody"></tbody>
+    </table>
+    <button class="add-btn" onclick="addRow()">+ Add Row</button>
+  </div>
+
+  <!-- Side Buttons -->
+  <div class="side-btns">
+    <button class="sb sb-alert"    onclick="openAlert()"    title="Time warning alert">Alert</button>
+    <button class="sb sb-transfer" onclick="transferData()" title="Send data to Google Sheets" id="tBtn">Transfer</button>
+    <button class="sb sb-timer"    onclick="timerToggle()"  title="Start / Stop countdown" id="timerBtn">⏱</button>
+    <button class="sb sb-fac"      onclick="openFacWheel()" title="Random facilitator wheel">Facili&shy;tator</button>
+  </div>
+</div>
+
+<!-- ══════════════ ALERT OVERLAY ══════════════ -->
+<div class="overlay" id="alertOverlay">
+  <div class="alert-msg">⏰ Allocated Time For This Point Is OVER!</div>
+  <div class="alert-sub">Please wrap up and move to the next discussion point.</div>
+  <div class="alert-actions">
+    <button class="alert-btn abtn-voice" id="voiceBtn" onclick="toggleVoice()">🔊 Stop Voice</button>
+    <button class="alert-btn abtn-close" onclick="closeAlert()">✕ Close</button>
+  </div>
+</div>
+
+<!-- ══════════════ TIMER POPUP ══════════════ -->
+<div class="overlay" id="timerOverlay">
+  <div class="timer-popup">
+    <h2>⏱ Countdown Timer</h2>
+    <div class="timer-clock" id="timerClock">10:00</div>
+    <div class="timer-sub" id="timerSub">Click Start to begin</div>
+    <div class="timer-btns">
+      <button class="tbtn tb-start" onclick="startTimer()">▶ Start</button>
+      <button class="tbtn tb-stop"  onclick="stopTimer()">⏹ Stop</button>
+      <button class="tbtn tb-close" onclick="closeTimer()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ FACILITATOR WHEEL ══════════════ -->
+<div class="overlay" id="facOverlay">
+  <div class="fac-popup">
+    <h2>🎡 Facilitator Selector</h2>
+    <div class="fac-loading" id="facLoading">Loading names from sheet...</div>
+    <div class="wheel-wrap" id="wheelWrap" style="display:none;">
+      <canvas id="wheelCanvas" width="320" height="320"></canvas>
+      <div class="wheel-pointer"></div>
+    </div>
+    <div class="winner-box" id="winnerBox">Spin the wheel!</div>
+    <div class="fac-btns">
+      <button class="fac-btn fb-spin"  onclick="spinWheel()"  id="spinBtn">🎡 Spin</button>
+      <button class="fac-btn fb-pick"  onclick="finalizeWinner()" id="pickBtn" style="display:none;">👑 Finalize</button>
+      <button class="fac-btn fb-close" onclick="closeFacWheel()">✕ Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════ SCRIPT ══════════════ -->
+<script>
+// ── CONFIG ──────────────────────────────────────
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz6oAOpCPJ9BzU2LDiwJfACtoGf3lIF3XlKtTk_hU678EPIOiE18y9xsRSOxSyMZlT4sw/exec';
+const STATUS_OPTS = ['','In Progress','Done','Not Done'];
+const WHEEL_COLORS = ['#e74c3c','#e67e22','#f1c40f','#27ae60','#1abc9c','#2980b9','#8e44ad','#e91e63','#00bcd4','#ff5722','#4caf50','#3f51b5'];
+
+// ── STATE ───────────────────────────────────────
+let rowNum       = 0;
+let timerSec     = 0;
+let timerTick    = null;
+let timerRunning = false;
+let speechOn     = false;
+let utterance    = null;
+let wheelNames   = [];
+let wheelAngle   = 0;
+let wheelSpinning= false;
+let wheelWinner  = '';
+
+// ── INIT ────────────────────────────────────────
+window.addEventListener('load', () => {
+  for (let i = 0; i < 10; i++) addRow();
+  recalc();
+});
+
+// ── FULLSCREEN ──────────────────────────────────
+function toggleFS() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen();
+    document.getElementById('fsBtn').textContent = '⊠';
+  } else {
+    document.exitFullscreen();
+    document.getElementById('fsBtn').textContent = '⛶';
+  }
+}
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement)
+    document.getElementById('fsBtn').textContent = '⛶';
+});
+
+// ── TABLE ───────────────────────────────────────
+function addRow(d) {
+  d = d || {};
+  const tr = document.createElement('tr');
+  tr.dataset.id = ++rowNum;
+  const opts = STATUS_OPTS.map(o =>
+    `<option value="${o}"${d.status===o?' selected':''}>${o}</option>`).join('');
+  tr.innerHTML = `
+    <td class="chk-cell"><input type="checkbox" onchange="onHL(this)" ${d.hl?'checked':''}></td>
+    <td class="sl-cell">–</td>
+    <td><input type="text" placeholder="Name..." value="${x(d.concern||'')}" oninput="recalc()"></td>
+    <td><input type="text" placeholder="Discussion point..." value="${x(d.discussion||'')}" oninput="recalc()"></td>
+    <td class="att-cell"><input type="checkbox" title="Attended" ${d.attended?'checked':''}></td>
+    <td><input type="text" placeholder="Responsible..." value="${x(d.responsible||'')}"></td>
+    <td><select class="ssel">${opts}</select></td>
+    <td><input type="text" placeholder="Action plan..." value="${x(d.actionPlan||'')}"></td>
+  `;
+  if (d.hl) tr.classList.add('hl');
+  document.getElementById('tbody').appendChild(tr);
+  recalc();
+}
+
+function x(s){ return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function onHL(cb){
+  cb.closest('tr').classList.toggle('hl', cb.checked);
+}
+
+function recalc() {
+  let sl = 0;
+  document.querySelectorAll('#tbody tr').forEach(row => {
+    const c = row.querySelector('td:nth-child(3) input').value.trim();
+    const d = row.querySelector('td:nth-child(4) input').value.trim();
+    if (c || d) {
+      row.querySelector('.sl-cell').textContent = ++sl;
+    } else {
+      row.querySelector('.sl-cell').textContent = '–';
+    }
+  });
+  document.getElementById('totalPts').textContent = sl;
+}
+
+// ── ALERT (TIME WARNING) ────────────────────────
+function openAlert() {
+  document.getElementById('alertOverlay').classList.add('open');
+  startVoice();
+}
+
+function closeAlert() {
+  stopVoice();
+  document.getElementById('alertOverlay').classList.remove('open');
+}
+
+function startVoice() {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  utterance = new SpeechSynthesisUtterance(
+    'Dear Sir, Allocated Time Is Over. We are running out of time.'
+  );
+  utterance.lang    = 'en-US';
+  utterance.rate    = 0.9;
+  utterance.pitch   = 1.1;
+  utterance.volume  = 1;
+  utterance.onend   = () => {
+    if (speechOn) setTimeout(() => window.speechSynthesis.speak(utterance), 1800);
+  };
+  speechOn = true;
+  window.speechSynthesis.speak(utterance);
+  document.getElementById('voiceBtn').textContent = '🔇 Stop Voice';
+}
+
+function stopVoice() {
+  speechOn = false;
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  const btn = document.getElementById('voiceBtn');
+  if (btn) btn.textContent = '🔊 Start Voice';
+}
+
+function toggleVoice() {
+  if (speechOn) { stopVoice(); }
+  else { startVoice(); }
+}
+
+// ── COUNTDOWN TIMER ─────────────────────────────
+function timerToggle() {
+  if (!document.getElementById('timerOverlay').classList.contains('open')) {
+    const mins = parseInt(document.getElementById('minsInput').value) || 10;
+    timerSec = mins * 60;
+    renderClock();
+    document.getElementById('timerSub').textContent = 'Click Start to begin';
+    document.getElementById('timerClock').className = 'timer-clock';
+    stopTimer();
+    document.getElementById('timerOverlay').classList.add('open');
+  } else {
+    timerRunning ? stopTimer() : startTimer();
+  }
+}
+
+function startTimer() {
+  if (timerRunning) return;
+  if (timerSec <= 0) {
+    const mins = parseInt(document.getElementById('minsInput').value) || 10;
+    timerSec = mins * 60;
+  }
+  timerRunning = true;
+  document.getElementById('timerBtn').classList.add('running');
+  document.getElementById('timerSub').textContent = 'Running...';
+  timerTick = setInterval(() => {
+    timerSec--;
+    renderClock();
+    if (timerSec === 60) {
+      document.getElementById('timerClock').className = 'timer-clock warn';
+      document.getElementById('timerSub').textContent = '1 minute remaining!';
+    }
+    if (timerSec <= 0) {
+      stopTimer();
+      document.getElementById('timerClock').className = 'timer-clock over';
+      document.getElementById('timerSub').textContent = 'Time is up!';
+    }
+  }, 1000);
+}
+
+function stopTimer() {
+  clearInterval(timerTick);
+  timerRunning = false;
+  document.getElementById('timerBtn').classList.remove('running');
+}
+
+function closeTimer() {
+  stopTimer();
+  document.getElementById('timerOverlay').classList.remove('open');
+}
+
+function renderClock() {
+  const s = Math.max(timerSec, 0);
+  const m = Math.floor(s / 60).toString().padStart(2,'0');
+  const sec = (s % 60).toString().padStart(2,'0');
+  document.getElementById('timerClock').textContent = `${m}:${sec}`;
+}
+
+// ── FACILITATOR WHEEL ────────────────────────────
+async function openFacWheel() {
+  document.getElementById('facOverlay').classList.add('open');
+  document.getElementById('facLoading').style.display = 'block';
+  document.getElementById('wheelWrap').style.display  = 'none';
+  document.getElementById('winnerBox').textContent    = 'Spin the wheel!';
+  document.getElementById('pickBtn').style.display    = 'none';
+  wheelWinner = '';
+
+  try {
+    const res   = await fetch(`${SCRIPT_URL}?action=getFacilitators`);
+    const data  = await res.json();
+    wheelNames  = data.names || [];
+
+    if (wheelNames.length === 0) throw new Error('No names found in Facilitators sheet.');
+
+    document.getElementById('facLoading').style.display = 'none';
+    document.getElementById('wheelWrap').style.display  = 'block';
+    wheelAngle = 0;
+    drawWheel();
+  } catch (err) {
+    document.getElementById('facLoading').textContent =
+      '⚠ Could not load names: ' + err.message +
+      '\n\nMake sure the Apps Script is deployed and Facilitators sheet exists.';
+  }
+}
+
+function closeFacWheel() {
+  document.getElementById('facOverlay').classList.remove('open');
+  wheelSpinning = false;
+}
+
+function drawWheel() {
+  const canvas = document.getElementById('wheelCanvas');
+  const ctx    = canvas.getContext('2d');
+  const cx = canvas.width / 2, cy = canvas.height / 2;
+  const r  = cx - 8;
+  const n  = wheelNames.length;
+  const arc = (2 * Math.PI) / n;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // Outer ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, r + 5, 0, 2 * Math.PI);
+  ctx.fillStyle = '#0d1b2a';
+  ctx.fill();
+
+  // Segments
+  for (let i = 0; i < n; i++) {
+    const start = wheelAngle + arc * i - Math.PI / 2;
+    const end   = start + arc;
+
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, r, start, end);
+    ctx.closePath();
+    ctx.fillStyle = WHEEL_COLORS[i % WHEEL_COLORS.length];
+    ctx.fill();
+    ctx.strokeStyle = '#fff';
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Label
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + arc / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = '#fff';
+    ctx.font = `bold ${n > 8 ? 11 : 13}px Segoe UI, Arial`;
+    ctx.shadowColor = 'rgba(0,0,0,.5)';
+    ctx.shadowBlur  = 3;
+    ctx.fillText(wheelNames[i], r - 10, 5);
+    ctx.restore();
+  }
+
+  // Center cap
+  ctx.beginPath();
+  ctx.arc(cx, cy, 18, 0, 2 * Math.PI);
+  ctx.fillStyle = '#1e1e2e';
+  ctx.fill();
+  ctx.strokeStyle = '#f0c030';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+
+  ctx.fillStyle = '#f0c030';
+  ctx.font = 'bold 14px Segoe UI';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText('🎡', cx, cy);
+  ctx.textBaseline = 'alphabetic';
+}
+
+function spinWheel() {
+  if (wheelSpinning || wheelNames.length === 0) return;
+  wheelSpinning = true;
+  document.getElementById('spinBtn').disabled = true;
+  document.getElementById('pickBtn').style.display = 'none';
+  document.getElementById('winnerBox').textContent = 'Spinning...';
+  wheelWinner = '';
+
+  const extraSpins  = Math.floor(Math.random() * 5) + 6; // 6–10 full rotations
+  const stopAngle   = Math.random() * 2 * Math.PI;
+  const totalRot    = extraSpins * 2 * Math.PI + stopAngle;
+  const duration    = 5000 + Math.random() * 1500;
+  const startAngle  = wheelAngle;
+  const startTime   = performance.now();
+
+  function ease(t){ return 1 - Math.pow(1 - t, 4); } // ease-out quartic
+
+  function frame(now) {
+    const elapsed  = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    wheelAngle     = startAngle + totalRot * ease(progress);
+    drawWheel();
+
+    if (progress < 1) {
+      requestAnimationFrame(frame);
+    } else {
+      wheelSpinning = false;
+      wheelAngle    = wheelAngle % (2 * Math.PI);
+      determineWinner();
+      document.getElementById('spinBtn').disabled = false;
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+function determineWinner() {
+  const n   = wheelNames.length;
+  const arc = (2 * Math.PI) / n;
+  // Pointer is at top (–π/2). Find which segment is there.
+  let a     = ((-wheelAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  const idx = Math.floor(a / arc) % n;
+  wheelWinner = wheelNames[idx];
+
+  document.getElementById('winnerBox').textContent = '🎉 ' + wheelWinner;
+  document.getElementById('pickBtn').style.display = 'inline-flex';
+}
+
+function finalizeWinner() {
+  if (!wheelWinner) return;
+  launchConfetti();
+  speak(`Today's facilitator is ${wheelWinner}. Congratulations!`);
+  showToast('👑 Facilitator: ' + wheelWinner);
+}
+
+function speak(text) {
+  if (!window.speechSynthesis) return;
+  window.speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = 'en-US'; u.rate = 0.95; u.volume = 1;
+  window.speechSynthesis.speak(u);
+}
+
+// ── CONFETTI ─────────────────────────────────────
+function launchConfetti() {
+  const colors = ['#f0c030','#e74c3c','#2ecc71','#3498db','#9b59b6','#e67e22'];
+  for (let i = 0; i < 120; i++) {
+    const el = document.createElement('div');
+    el.className = 'conf';
+    const size = Math.random() * 10 + 6;
+    el.style.cssText = `
+      width:${size}px;height:${size}px;
+      left:${Math.random()*100}vw;top:-12px;
+      background:${colors[Math.floor(Math.random()*colors.length)]};
+      transform:rotate(${Math.random()*360}deg);
+      animation:confFall ${2+Math.random()*2.5}s linear forwards;
+    `;
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(), 5000);
+  }
+  if (!document.getElementById('confStyle')) {
+    const s = document.createElement('style');
+    s.id = 'confStyle';
+    s.textContent = '@keyframes confFall{to{top:100vh;opacity:0;transform:rotate(720deg) scale(0.5);}}';
+    document.head.appendChild(s);
+  }
+}
+
+// ── TRANSFER DATA ────────────────────────────────
+async function transferData() {
+  const rows    = document.querySelectorAll('#tbody tr');
+  const payload = [];
+  const today   = new Date().toLocaleDateString('en-GB',
+    {day:'2-digit',month:'2-digit',year:'numeric'});
+
+  rows.forEach(row => {
+    if (row.querySelector('.sl-cell').textContent === '–') return;
+    const c = row.querySelectorAll('td');
+    const concern    = c[2].querySelector('input').value.trim();
+    const discussion = c[3].querySelector('input').value.trim();
+    if (!concern && !discussion) return;
+    payload.push({
+      sl:          c[1].textContent,
+      date:        today,
+      concern:     concern,
+      discussion:  discussion,
+      responsible: c[5].querySelector('input').value.trim(),
+      status:      c[6].querySelector('select').value,
+      actionPlan:  c[7].querySelector('input').value.trim()
+    });
+  });
+
+  if (payload.length === 0) { showToast('No data to transfer!', true); return; }
+
+  const btn = document.getElementById('tBtn');
+  btn.textContent = '⏳ Sending...';
+  btn.disabled = true;
+
+  try {
+    await fetch(SCRIPT_URL, {
+      method: 'POST',
+      mode:   'no-cors',
+      body:   JSON.stringify({ action:'addRows', rows: payload })
+    });
+
+    // no-cors = opaque response, assume success if no throw
+    showToast(`✓ ${payload.length} row(s) transferred to History sheet!`);
+    speak(`${payload.length} rows successfully transferred.`);
+
+    // Clear transferred rows
+    rows.forEach(row => {
+      if (row.querySelector('.sl-cell').textContent === '–') return;
+      row.querySelectorAll('td input[type="text"]').forEach(i => i.value='');
+      row.querySelectorAll('td select').forEach(s => s.value='');
+      row.querySelectorAll('td input[type="checkbox"]').forEach(c => c.checked=false);
+      row.classList.remove('hl');
+    });
+    recalc();
+
+  } catch(err) {
+    showToast('Transfer failed: ' + err.message, true);
+  } finally {
+    btn.textContent = 'Transfer';
+    btn.disabled = false;
+  }
+}
+
+// ── TOAST ────────────────────────────────────────
+let toastTimer;
+function showToast(msg, err) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (err?' err':'');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>{ el.className='toast'; }, 3800);
+}
+
+// Close overlays on backdrop click
+document.getElementById('facOverlay').addEventListener('click',
+  e=>{ if(e.target===e.currentTarget) closeFacWheel(); });
+document.getElementById('timerOverlay').addEventListener('click',
+  e=>{ if(e.target===e.currentTarget) closeTimer(); });
+document.getElementById('alertOverlay').addEventListener('click',
+  e=>{ if(e.target===e.currentTarget) closeAlert(); });
+</script>
+</body>
+</html>
