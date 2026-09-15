@@ -57,7 +57,7 @@ body{
 .stat-group{display:flex;gap:10px;align-items:stretch;}
 .stat-card{
   background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
-  flex-shrink:0;padding:9px 15px;
+  flex-shrink:0;padding:0 15px;height:66px;box-sizing:border-box;
   display:flex;align-items:center;gap:12px;width:150px;
   position:relative;box-shadow:0 1px 3px rgba(20,23,28,.04);
   transition:box-shadow .15s,transform .15s;
@@ -84,42 +84,42 @@ body{
   color:var(--ink);text-transform:uppercase;line-height:1.15;
 }
 .centre-title p{font-size:13.5px;color:var(--blue);margin-top:6px;letter-spacing:1.6px;font-weight:700;text-transform:uppercase;}
+.fac-refresh-btn{
+  display:none;align-items:center;justify-content:center;
+  width:18px;height:18px;margin-left:8px;vertical-align:middle;
+  background:var(--blue-bg);border:1px solid var(--blue-line);border-radius:50%;
+  color:var(--blue);font-size:11px;line-height:1;cursor:pointer;padding:0;
+  transition:background .12s,color .12s;
+}
+.fac-refresh-btn:hover{background:var(--blue);color:#ffffff;}
+.fac-refresh-btn.spinning{animation:spin .7s linear infinite;}
 
-/* ══ TIMER CARD — square LCD stopwatch ══ */
+/* ══ TIMER CARD — wide LCD stopwatch, height matched to the stat cards ══ */
 .timer-card{
   background:var(--surface);
   border:1px solid var(--line);
   border-radius:var(--r-lg);
-  padding:12px 26px;
-  display:flex;flex-direction:row;align-items:center;gap:22px;
+  padding:0 20px;height:66px;box-sizing:border-box;
+  display:flex;flex-direction:row;align-items:center;gap:18px;
   flex-shrink:0;position:relative;
   box-shadow:0 2px 8px rgba(20,23,28,.05);
 }
 .timer-ring-wrap{
-  position:relative;width:112px;height:112px;flex-shrink:0;border-radius:12px;
+  width:200px;height:46px;flex-shrink:0;border-radius:8px;
   background:var(--screen-bg);
+  display:flex;align-items:center;justify-content:center;
   transition:box-shadow .3s;
 }
-.timer-ring{width:100%;height:100%;display:block;}
-.ring-track{fill:none;stroke:var(--screen-line);stroke-width:7;}
-.ring-progress{
-  fill:none;stroke:var(--blue);stroke-width:7;stroke-linejoin:round;
-  stroke-dasharray:400;stroke-dashoffset:0;
-  transition:stroke-dashoffset .4s linear,stroke .3s;
-}
-.ring-center{
-  position:absolute;inset:0;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;
-}
+.ring-center{display:flex;flex-direction:column;align-items:center;justify-content:center;}
 .ring-time{
-  font-family:'Courier New',ui-monospace,monospace;font-size:24px;font-weight:800;
+  font-family:'Courier New',ui-monospace,monospace;font-size:22px;font-weight:800;
   color:#f2f4f7;line-height:1;letter-spacing:.5px;font-variant-numeric:tabular-nums;
 }
 .ring-status{
-  font-size:9.5px;font-weight:700;color:#7b8494;
-  letter-spacing:1.4px;margin-top:5px;text-transform:uppercase;
+  font-size:9px;font-weight:700;color:#7b8494;
+  letter-spacing:1.4px;margin-top:4px;text-transform:uppercase;
 }
-.timer-controls{display:flex;flex-direction:column;align-items:stretch;gap:9px;flex-shrink:0;}
+.timer-controls{display:flex;flex-direction:row;align-items:center;gap:14px;flex-shrink:0;}
 .timer-stepper{
   display:flex;flex-direction:row;align-items:center;justify-content:center;gap:8px;
   background:var(--surface-2);border-radius:var(--r);
@@ -638,7 +638,7 @@ select.ssel.is-set{font-size:14.5px;font-weight:600;color:var(--ink);}
   <!-- Left: Title -->
   <div class="centre-title">
     <h1>Cascading Meeting Co-Ordinator</h1>
-    <p id="facilitatorSub">Today's Facilitator: —</p>
+    <p id="facilitatorSub">Today's Facilitator: <span id="facNameText">—</span><button id="facRefreshBtn" class="fac-refresh-btn" onclick="loadTodaysFacilitator()" title="Refresh facilitator name">↺</button></p>
   </div>
 
   <!-- Right: Stat Cards + Timer -->
@@ -675,10 +675,6 @@ select.ssel.is-set{font-size:14.5px;font-weight:600;color:var(--ink);}
 
     <div class="timer-card">
       <div class="timer-ring-wrap">
-        <svg class="timer-ring" viewBox="0 0 120 120">
-          <rect class="ring-track" x="10" y="10" width="100" height="100"></rect>
-          <rect class="ring-progress" id="ringProgress" x="10" y="10" width="100" height="100"></rect>
-        </svg>
         <div class="ring-center">
           <div id="ringText" class="ring-time">10:00</div>
           <div id="ringSubText" class="ring-status">READY</div>
@@ -1132,7 +1128,6 @@ function stopVoice(){
 function toggleVoice(){speechOn?stopVoice():startVoice();}
 
 // ── TIMER ──
-const CIRC=400; // perimeter of the 100x100 square timer face (4*100)
 
 function setTimerButtons(state){
   document.getElementById('startTimerBtn').disabled = state==='running';
@@ -1177,12 +1172,6 @@ function resetTimer(){
 }
 function updateRing(label,color){
   const s=Math.max(timerSec,0);
-  const frac=timerTotal>0?s/timerTotal:1;
-  const ring=document.getElementById('ringProgress');
-  if(ring){
-    ring.style.strokeDashoffset=(CIRC*(1-frac)).toFixed(1);
-    ring.style.stroke=color;
-  }
   const wrap=document.querySelector('.timer-ring-wrap');
   if(wrap){
     const glowRgba=color==='#f59e0b'?'rgba(245,158,11,.3)':color==='#dc2626'?'rgba(220,38,38,.32)':color==='#94a3b8'?'rgba(148,163,184,.25)':'rgba(37,99,235,.28)';
@@ -1464,7 +1453,7 @@ async function saveFacilitatorPick(){
     status.textContent='Saved for '+date+'. Re-announce anytime to change it.';
     if(date===todayISO()){
       todaysFacilitatorName=name;
-      document.getElementById('facilitatorSub').textContent="Today's Facilitator: "+name;
+      setFacilitatorName(name);
     }
   }catch(err){
     btn.textContent='Save';
@@ -1473,16 +1462,25 @@ async function saveFacilitatorPick(){
     btn.disabled=false;
   }
 }
+function setFacilitatorName(name){
+  document.getElementById('facNameText').textContent=name||'—';
+  const btn=document.getElementById('facRefreshBtn');
+  if(btn) btn.style.display=name?'none':'inline-flex';
+}
 async function loadTodaysFacilitator(){
+  const btn=document.getElementById('facRefreshBtn');
+  if(btn){btn.style.display='inline-flex';btn.classList.add('spinning');}
   try{
     const res=await fetch(`${SCRIPT_URL}?action=getTodaysFacilitator&date=${todayISO()}`,{redirect:'follow'});
     const text=await res.text();
     const data=JSON.parse(text.replace(/^\)\]\}'/,'').trim());
     todaysFacilitatorName=data.name||'';
-    document.getElementById('facilitatorSub').textContent=
-      todaysFacilitatorName?("Today's Facilitator: "+todaysFacilitatorName):"Today's Facilitator: —";
+    setFacilitatorName(todaysFacilitatorName);
   }catch(e){
-    document.getElementById('facilitatorSub').textContent="Today's Facilitator: —";
+    todaysFacilitatorName='';
+    setFacilitatorName('');
+  } finally {
+    if(btn) btn.classList.remove('spinning');
   }
 }
 
