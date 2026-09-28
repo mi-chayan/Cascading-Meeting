@@ -10,26 +10,32 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
-  --bg:#f0f4ff;--surface:#ffffff;--surface-2:#f6f7f9;--surface-3:#eef0f3;
+  --bg:#eaf2f8;--surface:#ffffff;--surface-2:#f6f7f9;--surface-3:#eef0f3;
   --line:#dde2ef;--line-strong:#c5cdd9;
   --ink:#14171c;--ink-2:#525a66;--ink-3:#8a92a0;
-  --blue:#2563eb;--blue-bg:#dbeafe;--blue-line:#93c5fd;
+  --blue:#2c6cb0;--blue-bg:#dce9f5;--blue-line:#6ea8da;
   --warn:#d97706;--warn-solid:#f59e0b;--warn-bg:#fff5e6;--warn-line:#f0c27a;
   --green:#059669;--green-bg:#d1fae5;--green-line:#6ee7b7;
   --red:#dc2626;--red-bg:#fdeeee;--red-line:#f3b8b8;
-  --sky:#0284c7;--sky-bg:#eaf6fd;--sky-line:#a9dbf5;
-  --screen-bg:#0f172a;--screen-line:#1e3a5f;
+  --sky:#6ea8da;--sky-bg:#eaf2f8;--sky-line:#a8c9e8;
+  --tan:#c8a27a;--tan-bg:#f5ede1;--tan-line:#dfc09b;
+  --screen-bg:#1d3557;--screen-line:#2c6cb0;
   /* Header palette */
-  --hdr-from:#1e3a8a;--hdr-to:#1d4ed8;--hdr-text:rgba(255,255,255,.95);--hdr-muted:rgba(255,255,255,.6);
+  --hdr-from:#1d3557;--hdr-to:#2c6cb0;--hdr-text:rgba(255,255,255,.95);--hdr-muted:rgba(255,255,255,.65);
   --r:6px;--r-lg:10px;
 }
 html{height:100%;}
 body{
   min-height:100vh;display:flex;flex-direction:column;
   font-family:'Inter','Segoe UI',Arial,sans-serif;
-  background:#f4f6fb;
+  background:var(--bg);
   color:var(--ink);
   -webkit-font-smoothing:antialiased;
+}
+/* Force every control to the SAME font — browsers give buttons/inputs/selects
+   their own OS UI font by default, which is what caused the mismatch. */
+button,input,select,textarea,optgroup,option{
+  font-family:inherit!important;
 }
 
 /* ══ TOP BAR ══ */
@@ -42,12 +48,12 @@ body{
   box-shadow:0 3px 16px rgba(30,58,138,.35);
 }
 .fs-btn{
-  background:#fff;border:none;color:#1e3a8a;border-radius:var(--r);
+  background:#fff;border:none;color:var(--hdr-from);border-radius:var(--r);
   width:30px;height:30px;font-size:14px;cursor:pointer;
   display:flex;align-items:center;justify-content:center;transition:all .12s;
   box-shadow:0 2px 6px rgba(0,0,0,.18);font-weight:700;
 }
-.fs-btn:hover{background:#e0e7ff;color:#1d4ed8;box-shadow:0 4px 10px rgba(0,0,0,.22);}
+.fs-btn:hover{background:var(--blue-bg);color:var(--hdr-to);box-shadow:0 4px 10px rgba(0,0,0,.22);}
 
 /* ══ CARDS ROW ══ */
 .cards-row{
@@ -63,7 +69,7 @@ body{
 .stat-card{
   background:#fff;
   border:none;
-  border-left:5px solid #7c3aed;
+  border-left:5px solid var(--tan);
   border-radius:var(--r-lg);
   flex-shrink:0;padding:0 16px;height:66px;box-sizing:border-box;
   display:flex;align-items:center;gap:13px;width:158px;
@@ -81,7 +87,7 @@ body{
 .stat-icon{
   width:36px;height:36px;border-radius:var(--r);flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  background:#f5f3ff;color:#7c3aed;font-size:17px;
+  background:var(--tan-bg);color:var(--tan);font-size:17px;
 }
 .stat-card.s-done .stat-icon{background:#ecfdf5;color:#10b981;}
 .stat-card.s-remain .stat-icon{background:#fffbeb;color:#f59e0b;}
@@ -152,11 +158,11 @@ body{
 .ts-btn:active{transform:translateY(2px);box-shadow:0 1px 0 rgba(0,0,0,.2);}
 .ts-display{text-align:center;padding:0 6px;min-width:44px;}
 .ts-display .ts-num{
-  font-size:17px;font-weight:800;color:#fff;
+  font-size:17px;font-weight:800;color:var(--ink);
   font-family:inherit;line-height:1;display:block;
   font-variant-numeric:tabular-nums;
 }
-.ts-label{font-size:9px;font-weight:700;color:rgba(255,255,255,.6);letter-spacing:1.5px;display:block;margin-top:2px;}
+.ts-label{font-size:9px;font-weight:700;color:var(--ink-3);letter-spacing:1.5px;display:block;margin-top:2px;}
 .timer-actions{display:flex;flex-direction:row;gap:7px;justify-content:center;}
 .ta-btn{
   border:none;border-radius:var(--r);width:42px;height:32px;font-size:14px;
@@ -169,7 +175,7 @@ body{
 .ta-btn:disabled{opacity:.3;cursor:not-allowed;box-shadow:none;}
 .ta-start{background:#22c55e;color:#fff;}
 .ta-stop{background:#ef4444;color:#fff;}
-.ta-reset{background:rgba(255,255,255,.25);color:#fff;}
+.ta-reset{background:rgba(255,255,255,.92);color:var(--hdr-from);}
 
 /* ══ TABLE CARD — floats below the header, each row a separated white card ══ */
 .tbl-card{
@@ -186,9 +192,9 @@ col.c-st{width:110px;}col.c-ap{width:22%;}
 .concern-display{font-size:17.5px;font-weight:500;word-break:break-word;white-space:pre-wrap;line-height:1.45;padding:1px 0;margin:0;}
 thead th{
   background:#fff;
-  color:#1e3a8a;font-weight:800;padding:11px 7px;
+  color:var(--hdr-from);font-weight:800;padding:11px 7px;
   font-size:11.5px;text-transform:uppercase;letter-spacing:1.2px;white-space:nowrap;
-  text-align:center;border-bottom:3px solid #1d4ed8;border-top:1px solid var(--line);
+  text-align:center;border-bottom:3px solid var(--hdr-to);border-top:1px solid var(--line);
   position:sticky;top:0;z-index:98;
 }
 thead th:first-child{border-left:1px solid var(--line);border-top-left-radius:var(--r);}
@@ -276,7 +282,7 @@ select.ssel.is-set{font-size:14.5px;font-weight:600;color:var(--ink);}
 .ab-plan{background:#ffffff;color:var(--hdr-from);margin-right:auto;}
 .ab-alert{background:var(--red);color:#fff;}
 .ab-transfer{background:var(--green);color:#fff;}
-.ab-fac{background:var(--sky);color:#fff;}
+.ab-fac{background:var(--tan);color:#fff;}
 .ab-ratings{background:var(--ink);color:#fff;}
 .ab-refresh{background:#e2e8f0;color:var(--ink);}
 .ab-refresh.spinning .ab-icon{display:inline-block;animation:spin .7s linear infinite;}
@@ -526,7 +532,7 @@ select.ssel.is-set{font-size:14.5px;font-weight:600;color:var(--ink);}
   font-size:14px;font-weight:800;cursor:pointer;transition:background .2s,transform .12s;text-transform:uppercase;letter-spacing:.4px;
   box-shadow:0 4px 14px rgba(37,99,235,.4);
 }
-.win-save-btn:hover{background:#1d4ed8;transform:translateY(-1px);}
+.win-save-btn:hover{background:var(--hdr-from);transform:translateY(-1px);}
 .win-save-btn:disabled{opacity:.6;cursor:default;transform:none;}
 .win-save-btn.saved{background:var(--green);box-shadow:0 4px 14px rgba(5,150,105,.4);}
 .win-save-status{color:#9aa4b2;font-size:12px;text-align:right;min-height:14px;}
@@ -987,7 +993,7 @@ window.addEventListener('resize',fixTheadTop);
 window.addEventListener('load',()=>{
   const m=parseInt(document.getElementById('minsInput').value)||10;
   timerSec=m*60; timerTotal=m*60;
-  updateRing('READY','#2563eb');
+  updateRing('READY','#2c6cb0');
   // Restore planQueue from cache (survives tab close)
   try{const q=localStorage.getItem(CACHE_QUEUE);if(q)planQueue=JSON.parse(q);}catch(e){}
   loadPendingNotes();
@@ -1162,7 +1168,7 @@ function setTimerButtons(state){
 function onMinsChange(){
   if(!timerRunning){
     const m=parseInt(document.getElementById('minsInput').value)||10;
-    timerSec=m*60; timerTotal=m*60; updateRing('READY','#2563eb');
+    timerSec=m*60; timerTotal=m*60; updateRing('READY','#2c6cb0');
   }
 }
 function startTimer(){
@@ -1170,7 +1176,7 @@ function startTimer(){
     const m=parseInt(document.getElementById('minsInput').value)||10;
     if(timerSec<=0||timerTotal===0){timerSec=m*60;timerTotal=m*60;}
   }
-  timerRunning=true; setTimerButtons('running'); updateRing('RUNNING','#2563eb');
+  timerRunning=true; setTimerButtons('running'); updateRing('RUNNING','#2c6cb0');
   timerTick=setInterval(()=>{
     timerSec--;
     if(timerSec===60){
@@ -1181,7 +1187,7 @@ function startTimer(){
     } else if(timerSec<60){
       updateRing('1 MIN LEFT','#f59e0b');
     } else {
-      updateRing('RUNNING','#2563eb');
+      updateRing('RUNNING','#2c6cb0');
     }
   },1000);
 }
@@ -1193,20 +1199,20 @@ function resetTimer(){
   clearInterval(timerTick); timerRunning=false;
   const m=parseInt(document.getElementById('minsInput').value)||10;
   timerSec=m*60; timerTotal=m*60;
-  setTimerButtons('idle'); updateRing('READY','#2563eb');
+  setTimerButtons('idle'); updateRing('READY','#2c6cb0');
 }
 function updateRing(label,color){
   const s=Math.max(timerSec,0);
   const wrap=document.querySelector('.timer-ring-wrap');
   if(wrap){
-    const glowRgba=color==='#f59e0b'?'rgba(245,158,11,.3)':color==='#dc2626'?'rgba(220,38,38,.32)':color==='#94a3b8'?'rgba(148,163,184,.25)':'rgba(37,99,235,.28)';
+    const glowRgba=color==='#f59e0b'?'rgba(245,158,11,.3)':color==='#dc2626'?'rgba(220,38,38,.32)':color==='#94a3b8'?'rgba(148,163,184,.25)':'rgba(44,108,176,.32)';
     wrap.style.boxShadow='0 0 0 6px '+glowRgba;
   }
   const mm=Math.floor(s/60).toString().padStart(2,'0');
   const ss=(s%60).toString().padStart(2,'0');
   document.getElementById('ringText').textContent=`${mm}:${ss}`;
   const sub=document.getElementById('ringSubText');
-  if(label){ sub.textContent=label; sub.style.color=color==='#f59e0b'?'#fbbf24':color==='#dc2626'?'#f87171':'#38bdf8'; }
+  if(label){ sub.textContent=label; sub.style.color=color==='#f59e0b'?'#fbbf24':color==='#dc2626'?'#f87171':'#6ea8da'; }
 }
 function adjustMins(delta){
   if(timerRunning) return;
