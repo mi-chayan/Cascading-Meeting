@@ -157,10 +157,11 @@ body{
   border:1px solid var(--line);overflow:clip;padding:10px 10px 4px;
   box-shadow:0 4px 16px rgba(20,23,28,.06),0 1px 3px rgba(20,23,28,.05);
 }
-table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:17.5px;font-weight:500;table-layout:fixed;}
-col.c-chk{width:34px;}col.c-sl{width:36px;}col.c-cp{width:118px;}
-col.c-dp{width:26%;}col.c-att{width:64px;}col.c-rp{width:118px;}
-col.c-st{width:106px;}col.c-ap{width:22%;}
+table{width:100%;border-collapse:separate;border-spacing:0 8px;font-size:17.5px;font-weight:500;table-layout:auto;}
+col.c-chk{width:40px;}col.c-sl{width:40px;}col.c-cp{width:14%;}
+col.c-dp{width:28%;}col.c-att{width:60px;}col.c-rp{width:13%;}
+col.c-st{width:110px;}col.c-ap{width:22%;}
+.concern-display{font-size:17.5px;font-weight:500;word-break:break-word;white-space:pre-wrap;line-height:1.45;padding:1px 0;margin:0;}
 thead th{
   background:var(--surface);
   color:var(--ink);font-weight:700;padding:11px 7px;
@@ -172,9 +173,8 @@ thead th:first-child{border-left:1px solid var(--line);border-top-left-radius:va
 thead th:last-child{border-right:1px solid var(--line);border-top-right-radius:var(--r);}
 tbody td{
   padding:10px 7px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);
-  vertical-align:middle;background:var(--surface);transition:background .12s,border-color .12s;
+  vertical-align:top;background:var(--surface);transition:background .12s,border-color .12s;
 }
-tbody td.wrap-cell{vertical-align:top;}
 tbody td:first-child{border-left:1px solid var(--line);border-top-left-radius:var(--r-lg);border-bottom-left-radius:var(--r-lg);}
 tbody td:last-child{border-right:1px solid var(--line);border-top-right-radius:var(--r-lg);border-bottom-right-radius:var(--r-lg);}
 tbody tr:hover td{background:var(--surface-2);}
@@ -1028,7 +1028,7 @@ function addRow(d){
   tr.innerHTML=`
     <td class="chk-cell"><input type="checkbox" onchange="onHL(this)" ${d.hl?'checked':''}></td>
     <td class="sl-cell">–</td>
-    <td><input type="text" value="${x(d.concern||'')}" readonly tabindex="-1"></td>
+    <td><p class="concern-display">${x(d.concern||'')}</p></td>
     <td class="wrap-cell"><textarea rows="1" readonly tabindex="-1">${x(d.discussion||'')}</textarea></td>
     <td class="att-cell"><input type="checkbox" ${d.attended?'checked':''}></td>
     <td><input type="text" value="${x(d.responsible||'')}"></td>
@@ -1605,7 +1605,7 @@ function saveEditNote(localIdx){
   const tr=document.querySelector(`#tbody tr[data-note-uid="${uid}"]`);
   if(tr){
     const cells=tr.querySelectorAll('td');
-    const cp=cells[2]?.querySelector('input[type="text"]');if(cp)cp.value=c;
+    const cp=cells[2]?.querySelector('.concern-display');if(cp)cp.textContent=c;
     const dp=cells[3]?.querySelector('textarea');if(dp){dp.value=d;autoResize(dp);}
   }
   editingNoteIdx=-1;
@@ -1941,7 +1941,7 @@ function confirmSubmit(){
   const validRows=[...document.querySelectorAll('#tbody tr')].filter(tr=>{
     if(tr.querySelector('.sl-cell')?.textContent==='–') return false;
     const c=tr.querySelectorAll('td');
-    const concern=c[2]?.querySelector('input')?.value.trim()||'';
+    const concern=c[2]?.querySelector('.concern-display')?.textContent.trim()||'';
     const discussion=c[3]?.querySelector('textarea')?.value.trim()||'';
     return concern||discussion;
   });
@@ -1959,7 +1959,7 @@ async function transferData(){
   rows.forEach(row=>{
     if(row.querySelector('.sl-cell').textContent==='–') return;
     const c=row.querySelectorAll('td');
-    const concern=c[2].querySelector('input')?.value.trim()||'';
+    const concern=c[2].querySelector('.concern-display')?.textContent.trim()||'';
     const discussion=c[3].querySelector('textarea')?.value.trim()||'';
     if(!concern&&!discussion) return;
     payload.push({
@@ -1986,7 +1986,7 @@ async function transferData(){
     // Remove submitted rows from DOM
     Array.from(rows).forEach(row=>{
       const c=row.querySelectorAll('td');
-      const concern=c[2].querySelector('input')?.value.trim()||'';
+      const concern=c[2].querySelector('.concern-display')?.textContent.trim()||'';
       const discussion=c[3].querySelector('textarea')?.value.trim()||'';
       if(concern||discussion) row.remove();
     });
